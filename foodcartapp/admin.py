@@ -7,6 +7,8 @@ from .models import Product
 from .models import ProductCategory
 from .models import Restaurant
 from .models import RestaurantMenuItem
+from .models import FoodCart
+from .models import Entry
 
 
 class RestaurantMenuItemInline(admin.TabularInline):
@@ -104,3 +106,18 @@ class ProductAdmin(admin.ModelAdmin):
 @admin.register(ProductCategory)
 class ProductAdmin(admin.ModelAdmin):
     pass
+
+
+class EntryInline(admin.TabularInline):
+    model = Entry
+
+
+@admin.register(FoodCart)
+class FoodCartAdmin(admin.ModelAdmin):
+    list_display = [
+        'customer_name',
+        'customer_lastname',
+        'customer_adress',
+        'customer_phone',
+    ]
+    inlines = [EntryInline]
