@@ -2,6 +2,8 @@ import json
 
 from django.http import JsonResponse
 from django.templatetags.static import static
+from rest_framework.decorators import api_view
+
 
 from .models import Product
 from .models import FoodCart, Entry
@@ -59,28 +61,20 @@ def product_list_api(request):
     })
 
 
+@api_view(['POST'])
 def register_order(request):
-    try:
-        order_data = json.loads(request.body.decode())
-        print(order_data)
-        order = FoodCart.objects.create(
-            customer_name=order_data['firstname'],
-            customer_lastname=order_data['lastname'],
-            customer_adress=order_data['address'],
-            customer_phone=order_data['phonenumber']
+    order_data = json.loads(request.body.decode())
+    order = FoodCart.objects.create(
+        customer_name=order_data['firstname'],
+        customer_lastname=order_data['lastname'],
+        customer_adress=order_data['address'],
+        customer_phone=order_data['phonenumber']
+        )
+    for product in order_data['products']:
+        Entry.objects.create(
+            product=Product.objects.get(id=product['product']),
+            order=order,
+            quantity=product['quantity']
             )
-        for product in order_data['products']:
-            Entry.objects.create(
-                product=Product.objects.get(id=product['product']),
-                order=order,
-                quantity=product['quantity']
-                )
-    except ValueError:
-        return JsonResponse({
-            'error': 'Something went wrong',
-        })
-    return JsonResponse(order_data, safe=False, json_dumps_params={
-        'ensure_ascii': False,
-        'indent': 4,
-    })
+    return JsonResponse({})
 
