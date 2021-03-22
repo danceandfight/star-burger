@@ -3,7 +3,8 @@ import json
 from django.http import JsonResponse
 from django.templatetags.static import static
 from rest_framework.decorators import api_view
-
+from rest_framework.response import Response
+from rest_framework import status
 
 from .models import Product
 from .models import FoodCart, Entry
@@ -63,7 +64,14 @@ def product_list_api(request):
 
 @api_view(['POST'])
 def register_order(request):
-    order_data = json.loads(request.body.decode())
+    order_data = request.data
+    error = {}
+    if 'products' not in order_data or \
+        not isinstance(order_data['products'], list) or \
+        not order_data['products']:
+        error = {'error': 'Product key is not presented or not list'}
+        return Response(error, status=status.HTTP_404_NOT_FOUND)
+
     order = FoodCart.objects.create(
         customer_name=order_data['firstname'],
         customer_lastname=order_data['lastname'],
@@ -76,5 +84,4 @@ def register_order(request):
             order=order,
             quantity=product['quantity']
             )
-    return JsonResponse({})
-
+    return Response(error)
