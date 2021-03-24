@@ -69,9 +69,71 @@ def register_order(request):
     if 'products' not in order_data or \
         not isinstance(order_data['products'], list) or \
         not order_data['products']:
-        error = {'error': 'Product key is not presented or not list'}
-        return Response(error, status=status.HTTP_404_NOT_FOUND)
+        error = {'error': 'Products key is not presented or not list'}
+    elif 'firstname' not in order_data or \
+        not order_data['firstname'] or \
+        order_data['firstname'] == []:
+        error = {'error': 'the key "firstname" is not specified or not str'}
+    elif 'lastname' not in order_data or \
+        not order_data['lastname']:
+        error = {'error': 'the key "lastname" is not specified or not presented'}
+    elif 'phonenumber' not in order_data or \
+        not order_data['phonenumber'] or \
+        order_data['phonenumber'] == '':
+        error = {'error': 'the key "phonenumber" is not specified or not presented'}
+    elif 'address' not in order_data or \
+        not order_data['address']:
+        error = {'error': 'the key "address" is not specified or not presented'}
+    else:
+        for product in order_data['products']:
+            if not isinstance(product['product'], int):
+                error = {'error': 'Product key is not presented or not list'}
+                return Response(error, status=status.HTTP_404_NOT_FOUND)
+        order = FoodCart.objects.create(
+            customer_name=order_data['firstname'],
+            customer_lastname=order_data['lastname'],
+            customer_adress=order_data['address'],
+            customer_phone=order_data['phonenumber']
+            )
+        for product in order_data['products']:
+            Entry.objects.create(
+                product=Product.objects.get(id=product['product']),
+                order=order,
+                quantity=product['quantity']
+                )
+    return Response(error)
 
+
+"""
+order_data = request.data
+    error = {}
+    if 'products' not in order_data or \
+        not isinstance(order_data['products'], list) or \
+        not order_data['products']:
+        error = {'error': 'Products key is not presented or not list'}
+        return Response(error, status=status.HTTP_404_NOT_FOUND)
+    elif 'firstname' not in order_data or \
+        not order_data['firstname'] or \
+        order_data['firstname'] == []:
+        error = {'error': 'the key "firstname" is not specified or not str'}
+        return Response(error, status=status.HTTP_404_NOT_FOUND)
+    elif 'lastname' not in order_data or \
+        not order_data['lastname']:
+        error = {'error': 'the key "lastname" is not specified or not presented'}
+        return Response(error, status=status.HTTP_404_NOT_FOUND)
+    elif 'phonenumber' not in order_data or \
+        not order_data['phonenumber'] or \
+        order_data['phonenumber'] == '':
+        error = {'error': 'the key "phonenumber" is not specified or not presented'}
+        return Response(error, status=status.HTTP_404_NOT_FOUND)
+    elif 'address' not in order_data or \
+        not order_data['address']:
+        error = {'error': 'the key "address" is not specified or not presented'}
+        return Response(error, status=status.HTTP_404_NOT_FOUND)
+    for product in order_data['products']:
+        if not isinstance(product['product'], int):
+            error = {'error': 'Product key is not presented or not list'}
+            return Response(error, status=status.HTTP_404_NOT_FOUND)
     order = FoodCart.objects.create(
         customer_name=order_data['firstname'],
         customer_lastname=order_data['lastname'],
@@ -85,3 +147,4 @@ def register_order(request):
             quantity=product['quantity']
             )
     return Response(error)
+"""
