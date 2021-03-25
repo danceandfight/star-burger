@@ -115,9 +115,9 @@ class EntryInline(admin.TabularInline):
 @admin.register(FoodCart)
 class FoodCartAdmin(admin.ModelAdmin):
     list_display = [
-        'customer_name',
-        'customer_lastname',
-        'customer_adress',
-        'customer_phone',
+        'firstname',
+        'lastname',
+        'address',
+        'phonenumber',
     ]
     inlines = [EntryInline]

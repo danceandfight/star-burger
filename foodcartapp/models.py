@@ -71,10 +71,10 @@ class RestaurantMenuItem(models.Model):
 
 
 class FoodCart(models.Model):
-    customer_name = models.CharField('Имя', max_length=20)
-    customer_lastname = models.CharField('Фамилия', max_length=30)
-    customer_adress = models.CharField('адрес', max_length=100, blank=True)
-    customer_phone = PhoneNumberField("Нормализованный номер владельца", max_length=20, blank=True, db_index=True)
+    firstname = models.CharField('Имя', max_length=20)
+    lastname = models.CharField('Фамилия', max_length=30)
+    address = models.CharField('адрес', max_length=100, blank=True)
+    phonenumber = PhoneNumberField("Нормализованный номер владельца", max_length=20, blank=True, db_index=True)
 
     def __str__(self):
         return '{customer_adress} {customer_name} {customer_lastname}'

@@ -90,10 +90,10 @@ def register_order(request):
                 error = {'error': 'Product key is not presented or not list'}
                 return Response(error, status=status.HTTP_404_NOT_FOUND)
         order = FoodCart.objects.create(
-            customer_name=order_data['firstname'],
-            customer_lastname=order_data['lastname'],
-            customer_adress=order_data['address'],
-            customer_phone=order_data['phonenumber']
+            firstname=order_data['firstname'],
+            lastname=order_data['lastname'],
+            address=order_data['address'],
+            phonenumber=order_data['phonenumber']
             )
         for product in order_data['products']:
             Entry.objects.create(
