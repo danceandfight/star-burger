@@ -6,6 +6,11 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 
+from rest_framework.serializers import ValidationError
+from rest_framework.serializers import Serializer
+from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ListField
+
 from .models import Product
 from .models import FoodCart, Entry
 
@@ -61,44 +66,37 @@ def product_list_api(request):
         'indent': 4,
     })
 
+class EntrySerializer(ModelSerializer):
+    class Meta:
+        model = Entry
+        fields = ['product', 'quantity']
+
+class FoodCartSerializer(ModelSerializer):
+    products = EntrySerializer(many=True)
+
+    class Meta:
+        model = FoodCart
+        fields = ['firstname', 'lastname', 'phonenumber', 'address', 'products']
+
 
 @api_view(['POST'])
 def register_order(request):
-    order_data = request.data
-    error = {}
-    if 'products' not in order_data or \
-        not isinstance(order_data['products'], list) or \
-        not order_data['products']:
-        error = {'error': 'Products key is not presented or not list'}
-    elif 'firstname' not in order_data or \
-        not order_data['firstname'] or \
-        order_data['firstname'] == []:
-        error = {'error': 'the key "firstname" is not specified or not str'}
-    elif 'lastname' not in order_data or \
-        not order_data['lastname']:
-        error = {'error': 'the key "lastname" is not specified or not presented'}
-    elif 'phonenumber' not in order_data or \
-        not order_data['phonenumber'] or \
-        order_data['phonenumber'] == '':
-        error = {'error': 'the key "phonenumber" is not specified or not presented'}
-    elif 'address' not in order_data or \
-        not order_data['address']:
-        error = {'error': 'the key "address" is not specified or not presented'}
-    else:
-        for product in order_data['products']:
-            if not isinstance(product['product'], int):
-                error = {'error': 'Product key is not presented or not list'}
-                return Response(error, status=status.HTTP_404_NOT_FOUND)
-        order = FoodCart.objects.create(
-            firstname=order_data['firstname'],
-            lastname=order_data['lastname'],
-            address=order_data['address'],
-            phonenumber=order_data['phonenumber']
-            )
-        for product in order_data['products']:
-            Entry.objects.create(
-                product=Product.objects.get(id=product['product']),
-                order=order,
-                quantity=product['quantity']
-                )
-    return Response(error)
+    serializer = FoodCartSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    products = serializer.validated_data['products']
+    for product in products:
+        serializer = EntrySerializer(data=product)
+        serializer.is_valid(raise_exception=True)
+
+    order = FoodCart.objects.create(
+        firstname=serializer.validated_data['firstname'],
+        lastname=serializer.validated_data['lastname'],
+        address=serializer.validated_data['address'],
+        phonenumber=serializer.validated_data['phonenumber']
+        )
+
+    products_fields = serializer.validated_data['products']
+    products = [Entry(order=order, **fields) for fields in products_fields]
+    Entry.objects.bulk_create(products)
+
+    return Response({})
