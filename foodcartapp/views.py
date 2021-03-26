@@ -83,10 +83,6 @@ class FoodCartSerializer(ModelSerializer):
 def register_order(request):
     serializer = FoodCartSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    products = serializer.validated_data['products']
-    for product in products:
-        serializer = EntrySerializer(data=product)
-        serializer.is_valid(raise_exception=True)
 
     order = FoodCart.objects.create(
         firstname=serializer.validated_data['firstname'],
@@ -94,9 +90,12 @@ def register_order(request):
         address=serializer.validated_data['address'],
         phonenumber=serializer.validated_data['phonenumber']
         )
-
-    products_fields = serializer.validated_data['products']
-    products = [Entry(order=order, **fields) for fields in products_fields]
-    Entry.objects.bulk_create(products)
+    products = serializer.validated_data['products']
+    for product in products:
+        Entry.objects.create(
+            order=order,
+            product=Product.objects.get(name=product['product']),
+            quantity=product['quantity']
+            )
 
     return Response({})
