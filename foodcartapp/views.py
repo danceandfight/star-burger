@@ -1,15 +1,9 @@
-import json
-
 from django.http import JsonResponse
 from django.templatetags.static import static
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import status
 
-from rest_framework.serializers import ValidationError
-from rest_framework.serializers import Serializer
 from rest_framework.serializers import ModelSerializer
-from rest_framework.serializers import ListField
 
 from .models import Product
 from .models import FoodCart, Entry
@@ -66,13 +60,15 @@ def product_list_api(request):
         'indent': 4,
     })
 
+
 class EntrySerializer(ModelSerializer):
     class Meta:
         model = Entry
         fields = ['product', 'quantity']
 
+
 class FoodCartSerializer(ModelSerializer):
-    products = EntrySerializer(many=True)
+    products = EntrySerializer(many=True, write_only=True)
 
     class Meta:
         model = FoodCart
@@ -97,5 +93,5 @@ def register_order(request):
             product=Product.objects.get(name=product['product']),
             quantity=product['quantity']
             )
-
-    return Response({})
+    frontend_serialized_order = FoodCartSerializer(order)
+    return Response(frontend_serialized_order.data)
