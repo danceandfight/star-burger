@@ -100,14 +100,14 @@ def view_orders(request):
     orders = FoodCart.objects.all()
     orders_data = []
     for order in orders:
-        clients_data = {
+        order_data = {
             'id': order.id,
             'firstname': order.firstname,
             'lastname': order.lastname,
             'phonenumber': order.phonenumber,
             'address': order.address
             }
-        orders_data.append(clients_data)
+        orders_data.append(order_data)
 
     return render(
         request,
@@ -115,4 +115,3 @@ def view_orders(request):
         context={
             'order_items': orders_data}
         )
-
