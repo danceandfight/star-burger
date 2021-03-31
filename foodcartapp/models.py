@@ -77,7 +77,7 @@ class FoodCart(models.Model):
     phonenumber = PhoneNumberField("Нормализованный номер владельца", max_length=20, db_index=True)
 
     def __str__(self):
-        return '{customer_adress} {customer_name} {customer_lastname}'
+        return f'{self.address} {self.firstname} {self.lastname}'
 
     class Meta:
         verbose_name = 'заказ'

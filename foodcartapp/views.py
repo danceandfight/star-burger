@@ -72,7 +72,7 @@ class FoodCartSerializer(ModelSerializer):
 
     class Meta:
         model = FoodCart
-        fields = ['firstname', 'lastname', 'phonenumber', 'address', 'products']
+        fields = ['id', 'firstname', 'lastname', 'phonenumber', 'address', 'products']
 
 
 @api_view(['POST'])
