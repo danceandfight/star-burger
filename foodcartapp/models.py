@@ -85,6 +85,9 @@ class FoodCart(models.Model):
 
 
 class Entry(models.Model):
-    product = models.ForeignKey(Product, null=True, on_delete=models.CASCADE)
-    order = models.ForeignKey(FoodCart, null=True, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, related_name='product_entries', null=True, on_delete=models.CASCADE)
+    order = models.ForeignKey(FoodCart, related_name='order_entries', null=True, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f'{self.product.name} x {self.quantity}'
