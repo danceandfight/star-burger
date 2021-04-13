@@ -88,10 +88,12 @@ def register_order(request):
         )
     products = serializer.validated_data['products']
     for product in products:
+        product_request = Product.objects.get(name=product['product'])
         Entry.objects.create(
             order=order,
-            product=Product.objects.get(name=product['product']),
-            quantity=product['quantity']
+            product=product_request,
+            quantity=product['quantity'],
+            price=product_request.price
             )
     frontend_serialized_order = FoodCartSerializer(order)
     return Response(frontend_serialized_order.data)

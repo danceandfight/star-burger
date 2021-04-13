@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.db.models import F, Sum, DecimalField
-
+from django.core.exceptions import ValidationError
 
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -98,6 +98,12 @@ class Entry(models.Model):
     product = models.ForeignKey(Product, related_name='product_entries', null=True, on_delete=models.CASCADE)
     order = models.ForeignKey(FoodCart, related_name='order_entries', null=True, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
+    price = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        validators=[MinValueValidator(0.0)],
+        null=True,
+        blank=True)
 
     def __str__(self):
         return f'{self.product.name} x {self.quantity}'
