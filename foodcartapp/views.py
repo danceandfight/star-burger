@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from django.templatetags.static import static
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.db import transaction
 
 from rest_framework.serializers import ModelSerializer
 
@@ -74,12 +75,12 @@ class FoodCartSerializer(ModelSerializer):
         model = FoodCart
         fields = ['id', 'firstname', 'lastname', 'phonenumber', 'address', 'products']
 
-
+@transaction.atomic
 @api_view(['POST'])
 def register_order(request):
     serializer = FoodCartSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-
+    
     order = FoodCart.objects.create(
         firstname=serializer.validated_data['firstname'],
         lastname=serializer.validated_data['lastname'],
