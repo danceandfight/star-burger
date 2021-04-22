@@ -1,7 +1,9 @@
 from django.contrib import admin
 from django.shortcuts import reverse
+from django.shortcuts import redirect
 from django.templatetags.static import static
 from django.utils.html import format_html
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .models import Product
 from .models import ProductCategory
@@ -98,7 +100,7 @@ class ProductAdmin(admin.ModelAdmin):
     def get_image_list_preview(self, obj):
         if not obj.image or not obj.id:
             return 'нет картинки'
-        edit_url = reverse('admin:foodcartapp_product_change', args=(obj.id,))
+        edit_url = reverse('admin:FoodCartAdminpp_product_change', args=(obj.id,))
         return format_html('<a href="{edit_url}"><img src="{src}" height="50"/></a>', edit_url=edit_url, src=obj.image.url)
     get_image_list_preview.short_description = 'превью'
 
@@ -121,3 +123,12 @@ class FoodCartAdmin(admin.ModelAdmin):
         'phonenumber',
     ]
     inlines = [EntryInline]
+
+    def response_change(self, request, obj):
+
+        res = super(FoodCartAdmin, self).response_change(request, obj)
+        if "next" in request.GET:
+            if url_has_allowed_host_and_scheme(request.GET['next'], None):
+                return redirect(request.GET['next'])
+        else:
+            return res
