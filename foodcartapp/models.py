@@ -83,6 +83,13 @@ class FoodCart(models.Model):
     lastname = models.CharField('Фамилия', max_length=30)
     address = models.CharField('адрес', max_length=100, blank=True)
     phonenumber = PhoneNumberField("Нормализованный номер владельца", max_length=20, db_index=True)
+    choices = (('Recieved', 'Доставлен'), ('In progress', 'В обработке'))
+    status = models.CharField(
+        'Статус заказа',
+        max_length=30,
+        choices=choices,
+        blank=True
+        )
 
     objects = FoodCartQuerySet.as_manager()
 
