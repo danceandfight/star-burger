@@ -2,6 +2,7 @@ from django.db import models
 from django.core.validators import MinValueValidator
 from django.db.models import F, Sum, DecimalField
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -91,6 +92,21 @@ class FoodCart(models.Model):
         blank=True
         )
     comment = models.TextField('Комментарий', blank=True)
+    registrated_at = models.DateTimeField(
+        'Заказ зарегестрирован',
+        blank=True,
+        default=timezone.now
+        )
+    called_at = models.DateTimeField(
+        'Звонок совершен',
+        blank=True,
+        default=timezone.now
+        )
+    delivered_at = models.DateTimeField(
+        'Заказ доставлен',
+        blank=True,
+        default=timezone.now
+        )
     objects = FoodCartQuerySet.as_manager()
 
     def __str__(self):
