@@ -90,7 +90,7 @@ class FoodCart(models.Model):
         choices=choices,
         blank=True
         )
-
+    comment = models.TextField('Комментарий', blank=True)
     objects = FoodCartQuerySet.as_manager()
 
     def __str__(self):
@@ -110,7 +110,8 @@ class Entry(models.Model):
         decimal_places=2,
         validators=[MinValueValidator(0.0)],
         null=True,
-        blank=True)
+        blank=True
+        )
 
     def __str__(self):
         return f'{self.product.name} x {self.quantity}'

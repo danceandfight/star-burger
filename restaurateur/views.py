@@ -108,7 +108,8 @@ def view_orders(request):
             'lastname': order.lastname,
             'phonenumber': order.phonenumber,
             'address': order.address,
-            'status': order.status
+            'status': order.status,
+            'comment': order.comment
             }
         orders_data.append(order_data)
 
