@@ -109,7 +109,8 @@ def view_orders(request):
             'phonenumber': order.phonenumber,
             'address': order.address,
             'status': order.status,
-            'comment': order.comment
+            'comment': order.comment,
+            'payment_method': order.get_payment_method_display()
             }
         orders_data.append(order_data)
 

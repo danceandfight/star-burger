@@ -85,10 +85,17 @@ class FoodCart(models.Model):
     address = models.CharField('адрес', max_length=100, blank=True)
     phonenumber = PhoneNumberField("Нормализованный номер владельца", max_length=20, db_index=True)
     choices = (('Recieved', 'Доставлен'), ('In progress', 'В обработке'))
+    payment_methods = (('Cash', 'Наличными'), ('By card', 'Картой'))
     status = models.CharField(
         'Статус заказа',
         max_length=30,
         choices=choices,
+        blank=True
+        )
+    payment_method = models.CharField(
+        'Способ оплаты',
+        max_length=30,
+        choices=payment_methods,
         blank=True
         )
     comment = models.TextField('Комментарий', blank=True)
