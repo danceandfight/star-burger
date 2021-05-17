@@ -86,6 +86,13 @@ class FoodCart(models.Model):
     phonenumber = PhoneNumberField("Нормализованный номер владельца", max_length=20, db_index=True)
     choices = (('Recieved', 'Доставлен'), ('In progress', 'В обработке'))
     payment_methods = (('Cash', 'Наличными'), ('By card', 'Картой'))
+    restaurant = models.ForeignKey(
+        Restaurant,
+        on_delete=models.CASCADE,
+        related_name='restaurant_order',
+        blank=True,
+        null=True,
+        verbose_name="ресторан")
     status = models.CharField(
         'Статус заказа',
         max_length=30,

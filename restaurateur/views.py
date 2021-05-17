@@ -1,3 +1,5 @@
+from copy import copy
+
 from django import forms
 from django.shortcuts import redirect, render
 from django.views import View
@@ -8,7 +10,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 
 
-from foodcartapp.models import Product, Restaurant, FoodCart
+from foodcartapp.models import Product, Restaurant, FoodCart, RestaurantMenuItem
 
 
 class Login(forms.Form):
@@ -95,12 +97,37 @@ def view_restaurants(request):
     })
 
 
+def get_burger_availability(): # get dict of burgers as keys with restaurants lists as values
+    restaurantsmenuitems = list(RestaurantMenuItem.objects.select_related('restaurant', 'product').all())
+    burger_availability = {}
+    for item in restaurantsmenuitems:
+        if item.product.name not in burger_availability:
+            burger_availability[item.product.name] =[]
+        if item.availability:
+            burger_availability[item.product.name].append(item.restaurant.name)
+    return burger_availability
+
+def get_suitable_restaurant(menuitems, ordered_items):
+    restaurant_list = []
+    for item in ordered_items:
+        if item in menuitems.keys():
+            restaurant_list.append(menuitems[item])
+    return ', '.join(set.intersection(*[set(list) for list in restaurant_list]))
+
+
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
 
     orders_data = []
+    menuitems = []
+    if not menuitems:
+        menuitems = get_burger_availability()
 
     for order in FoodCart.objects.get_price():
+        products = order.order_entries.all()
+        ordered_products_list = [product.product.name for product in products]
+        order_restraurant = get_suitable_restaurant(menuitems, ordered_products_list)
+        #order_restraurant = get_suitable_restraunt(products)
         order_data = {
             'id': order.id,
             'price': order.price,
@@ -110,7 +137,8 @@ def view_orders(request):
             'address': order.address,
             'status': order.get_status_display(),
             'comment': order.comment,
-            'payment_method': order.get_payment_method_display()
+            'payment_method': order.get_payment_method_display(),
+            'restaurant': order_restraurant
             }
         orders_data.append(order_data)
 
@@ -120,3 +148,19 @@ def view_orders(request):
         context={
             'order_items': orders_data}
         )
+
+"""
+def get_suitable_restraunt(products):
+    products_availability = []
+    for product in products:
+        restaurnats_with_product = []
+        for menuitem in list(RestaurantMenuItem.objects \
+            .select_related('restaurant', 'product') \
+            .filter(product__id=product.product.id, availability=True)):
+            restaurnats_with_product.append(menuitem.restaurant)
+        products_availability.append(restaurnats_with_product)
+    print(products_availability)
+    suitable_restaurant = set.intersection(*[set(list) for list in products_availability])
+    #suitable_restaurant = set.intersection(*[set(list) for list in restaurnats_with_product])
+    return suitable_restaurant
+"""

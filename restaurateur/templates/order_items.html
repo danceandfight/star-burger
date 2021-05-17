@@ -21,9 +21,9 @@
       <th>Адрес доставки</th>
       <th>Сумма заказа</th>
       <th>Комментарий</th>
+      <th>Ресторан</th>
       <th>Ссылка на админку</th>
     </tr>
-
     {% for item in order_items %}
       <tr>
         <td>{{ item.id }}</td>
@@ -34,6 +34,15 @@
         <td>{{ item.address }}</td>
         <td>{{ item.price }}</td>
         <td>{{ item.comment }}</td>
+        <td>
+          <details>
+            <summary>Развернуть</summary>
+              {% for restaurant in item.restaurant %}
+                {{ restaurant }}
+              {% endfor %}
+            
+          </details>
+        </td>
         <td><a href='{% url "admin:foodcartapp_foodcart_change" object_id=item.id %}?next={{ request.path|urlencode }}'>Редактировать</a></td>
       </tr>
     {% endfor %}
