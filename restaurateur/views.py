@@ -1,16 +1,21 @@
-from copy import copy
+import requests
 
 from django import forms
 from django.shortcuts import redirect, render
 from django.views import View
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import user_passes_test
-
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 
-
 from foodcartapp.models import Product, Restaurant, FoodCart, RestaurantMenuItem
+
+from geopy import distance
+from environs import Env
+from operator import itemgetter
+
+env = Env()
+env.read_env()
 
 
 class Login(forms.Form):
@@ -97,22 +102,42 @@ def view_restaurants(request):
     })
 
 
-def get_burger_availability(): # get dict of burgers as keys with restaurants lists as values
+def get_burger_availability():
     restaurantsmenuitems = list(RestaurantMenuItem.objects.select_related('restaurant', 'product').all())
     burger_availability = {}
     for item in restaurantsmenuitems:
         if item.product.name not in burger_availability:
-            burger_availability[item.product.name] =[]
+            burger_availability[item.product.name] = []
         if item.availability:
             burger_availability[item.product.name].append(item.restaurant.name)
     return burger_availability
+
 
 def get_suitable_restaurant(menuitems, ordered_items):
     restaurant_list = []
     for item in ordered_items:
         if item in menuitems.keys():
             restaurant_list.append(menuitems[item])
-    return ', '.join(set.intersection(*[set(list) for list in restaurant_list]))
+    return set.intersection(*[set(list) for list in restaurant_list])
+
+
+def fetch_coordinates(apikey, place):
+    base_url = "https://geocode-maps.yandex.ru/1.x"
+    params = {"geocode": place, "apikey": apikey, "format": "json"}
+    response = requests.get(base_url, params=params)
+    response.raise_for_status()
+    found_places = response.json()['response']['GeoObjectCollection']['featureMember']
+    most_relevant = found_places[0]
+    lon, lat = most_relevant['GeoObject']['Point']['pos'].split(" ")
+    return lon, lat
+
+
+def get_restaurant_distance(order_address, restaurant_address):
+    apikey = env('API_KEY')
+    order_lon, order_lat = fetch_coordinates(apikey, order_address)
+    address_lon, address_lat = fetch_coordinates(apikey, restaurant_address)
+    distance_to_restaurant = distance.distance((order_lat, order_lon), (address_lat, address_lon)).km
+    return round(distance_to_restaurant, 1)
 
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
@@ -120,14 +145,28 @@ def view_orders(request):
 
     orders_data = []
     menuitems = []
+    restaurants = Restaurant.objects.all()
+
     if not menuitems:
         menuitems = get_burger_availability()
 
     for order in FoodCart.objects.get_price():
         products = order.order_entries.all()
         ordered_products_list = [product.product.name for product in products]
-        order_restraurant = get_suitable_restaurant(menuitems, ordered_products_list)
-        #order_restraurant = get_suitable_restraunt(products)
+        order_restraurants = get_suitable_restaurant(menuitems, ordered_products_list)
+
+        restaurant_distances = []
+
+        for restaurant in order_restraurants:
+            restaurant = restaurants.get(name=restaurant)
+            restaurant_address = restaurant.address
+            restaurant_name = restaurant.name
+            distance = get_restaurant_distance(order.address, restaurant_address)
+            restaurant_distances.append([restaurant_name, distance])
+        sorted_restaurant_distances = []
+        for restaurant in sorted(restaurant_distances, key=itemgetter(1)):
+            sorted_restaurant_distances.append(f'{restaurant[0]} - {restaurant[1]} км')
+
         order_data = {
             'id': order.id,
             'price': order.price,
@@ -138,7 +177,7 @@ def view_orders(request):
             'status': order.get_status_display(),
             'comment': order.comment,
             'payment_method': order.get_payment_method_display(),
-            'restaurant': order_restraurant
+            'restaurant': sorted_restaurant_distances
             }
         orders_data.append(order_data)
 
@@ -148,19 +187,3 @@ def view_orders(request):
         context={
             'order_items': orders_data}
         )
-
-"""
-def get_suitable_restraunt(products):
-    products_availability = []
-    for product in products:
-        restaurnats_with_product = []
-        for menuitem in list(RestaurantMenuItem.objects \
-            .select_related('restaurant', 'product') \
-            .filter(product__id=product.product.id, availability=True)):
-            restaurnats_with_product.append(menuitem.restaurant)
-        products_availability.append(restaurnats_with_product)
-    print(products_availability)
-    suitable_restaurant = set.intersection(*[set(list) for list in products_availability])
-    #suitable_restaurant = set.intersection(*[set(list) for list in restaurnats_with_product])
-    return suitable_restaurant
-"""
