@@ -9,6 +9,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 
 from foodcartapp.models import Product, Restaurant, FoodCart, RestaurantMenuItem
+from places.models import Place
 
 from geopy import distance
 from environs import Env
@@ -154,6 +155,58 @@ def view_orders(request):
         products = order.order_entries.all()
         ordered_products_list = [product.product.name for product in products]
         order_restraurants = get_suitable_restaurant(menuitems, ordered_products_list)
+        order_address = order.address
+
+        restaurant_distances = []
+
+        for restaurant in order_restraurants:
+            restaurant = restaurants.get(name=restaurant)
+            restaurant_address = restaurant.address
+            restaurant_name = restaurant.name
+            distance = get_restaurant_distance(order_address, restaurant_address)
+            restaurant_distances.append([restaurant_name, distance])
+        #sorted_restaurant_distances = []
+        #for restaurant in sorted(restaurant_distances, key=itemgetter(1)):
+            #sorted_restaurant_distances.append(f'{restaurant[0]} - {restaurant[1]} км')
+        restaurant_distances = sorted(restaurant_distances, key=itemgetter(1))
+
+        order_data = {
+            'id': order.id,
+            'price': order.price,
+            'firstname': order.firstname,
+            'lastname': order.lastname,
+            'phonenumber': order.phonenumber,
+            'address': order.address,
+            'status': order.get_status_display(),
+            'comment': order.comment,
+            'payment_method': order.get_payment_method_display(),
+            'restaurant': restaurant_distances
+            #'restaurant': sorted_restaurant_distances
+            }
+        orders_data.append(order_data)
+
+    return render(
+        request,
+        template_name='order_items.html',
+        context={
+            'order_items': orders_data}
+        )
+
+"""
+@user_passes_test(is_manager, login_url='restaurateur:login')
+def view_orders(request):
+
+    orders_data = []
+    menuitems = []
+    restaurants = Restaurant.objects.all()
+
+    if not menuitems:
+        menuitems = get_burger_availability()
+
+    for order in FoodCart.objects.get_price():
+        products = order.order_entries.all()
+        ordered_products_list = [product.product.name for product in products]
+        order_restraurants = get_suitable_restaurant(menuitems, ordered_products_list)
 
         restaurant_distances = []
 
@@ -187,3 +240,5 @@ def view_orders(request):
         context={
             'order_items': orders_data}
         )
+
+"""
