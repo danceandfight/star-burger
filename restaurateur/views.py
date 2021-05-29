@@ -1,4 +1,5 @@
 import requests
+import datetime
 
 from django import forms
 from django.shortcuts import redirect, render
@@ -122,6 +123,18 @@ def get_suitable_restaurant(menuitems, ordered_items):
     return set.intersection(*[set(list) for list in restaurant_list])
 
 
+def get_or_create_place(api_key, place):
+    place_instance, created = Place.objects.get_or_create(
+        address=place.address,
+        defaults={
+            'lon': fetch_coordinates(api_key, place.address)[0],
+            'lat': fetch_coordinates(api_key, place.address)[1],
+            'date': datetime.datetime.now()
+        }
+        )
+    return place_instance
+
+
 def fetch_coordinates(apikey, place):
     base_url = "https://geocode-maps.yandex.ru/1.x"
     params = {"geocode": place, "apikey": apikey, "format": "json"}
@@ -133,14 +146,6 @@ def fetch_coordinates(apikey, place):
     return lon, lat
 
 
-def get_restaurant_distance(order_address, restaurant_address):
-    apikey = env('API_KEY')
-    order_lon, order_lat = fetch_coordinates(apikey, order_address)
-    address_lon, address_lat = fetch_coordinates(apikey, restaurant_address)
-    distance_to_restaurant = distance.distance((order_lat, order_lon), (address_lat, address_lon)).km
-    return round(distance_to_restaurant, 1)
-
-
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
 
@@ -148,26 +153,27 @@ def view_orders(request):
     menuitems = []
     restaurants = Restaurant.objects.all()
 
+    apikey = env('API_KEY')
+
     if not menuitems:
         menuitems = get_burger_availability()
 
     for order in FoodCart.objects.get_price():
-        products = order.order_entries.all()
+        products = order.order_entries.select_related('product')
         ordered_products_list = [product.product.name for product in products]
         order_restraurants = get_suitable_restaurant(menuitems, ordered_products_list)
-        order_address = order.address
 
         restaurant_distances = []
 
         for restaurant in order_restraurants:
-            restaurant = restaurants.get(name=restaurant)
-            restaurant_address = restaurant.address
-            restaurant_name = restaurant.name
-            distance = get_restaurant_distance(order_address, restaurant_address)
-            restaurant_distances.append([restaurant_name, distance])
-        #sorted_restaurant_distances = []
-        #for restaurant in sorted(restaurant_distances, key=itemgetter(1)):
-            #sorted_restaurant_distances.append(f'{restaurant[0]} - {restaurant[1]} км')
+            restaurant = restaurants.get(name=restaurant) 
+            restaurant_place = get_or_create_place(apikey, restaurant)
+            order_place = get_or_create_place(apikey, order)
+            distance_to_restaurant = distance.distance(
+                (restaurant_place.lat, restaurant_place.lon), 
+                (order_place.lat, order_place.lon)
+                ).km
+            restaurant_distances.append([restaurant.name, round(distance_to_restaurant, 1)])
         restaurant_distances = sorted(restaurant_distances, key=itemgetter(1))
 
         order_data = {
@@ -181,7 +187,6 @@ def view_orders(request):
             'comment': order.comment,
             'payment_method': order.get_payment_method_display(),
             'restaurant': restaurant_distances
-            #'restaurant': sorted_restaurant_distances
             }
         orders_data.append(order_data)
 
@@ -191,54 +196,3 @@ def view_orders(request):
         context={
             'order_items': orders_data}
         )
-
-"""
-@user_passes_test(is_manager, login_url='restaurateur:login')
-def view_orders(request):
-
-    orders_data = []
-    menuitems = []
-    restaurants = Restaurant.objects.all()
-
-    if not menuitems:
-        menuitems = get_burger_availability()
-
-    for order in FoodCart.objects.get_price():
-        products = order.order_entries.all()
-        ordered_products_list = [product.product.name for product in products]
-        order_restraurants = get_suitable_restaurant(menuitems, ordered_products_list)
-
-        restaurant_distances = []
-
-        for restaurant in order_restraurants:
-            restaurant = restaurants.get(name=restaurant)
-            restaurant_address = restaurant.address
-            restaurant_name = restaurant.name
-            distance = get_restaurant_distance(order.address, restaurant_address)
-            restaurant_distances.append([restaurant_name, distance])
-        sorted_restaurant_distances = []
-        for restaurant in sorted(restaurant_distances, key=itemgetter(1)):
-            sorted_restaurant_distances.append(f'{restaurant[0]} - {restaurant[1]} км')
-
-        order_data = {
-            'id': order.id,
-            'price': order.price,
-            'firstname': order.firstname,
-            'lastname': order.lastname,
-            'phonenumber': order.phonenumber,
-            'address': order.address,
-            'status': order.get_status_display(),
-            'comment': order.comment,
-            'payment_method': order.get_payment_method_display(),
-            'restaurant': sorted_restaurant_distances
-            }
-        orders_data.append(order_data)
-
-    return render(
-        request,
-        template_name='order_items.html',
-        context={
-            'order_items': orders_data}
-        )
-
-"""
