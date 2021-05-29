@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'phonenumber_field',
     'rest_framework',
+    'places.apps.PlacesConfig'
 ]
 
 MIDDLEWARE = [
@@ -87,6 +88,7 @@ DATABASES = {
         default='sqlite:////{0}'.format(os.path.join(BASE_DIR, 'db.sqlite3'))
     )
 }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
