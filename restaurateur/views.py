@@ -123,12 +123,15 @@ def get_suitable_restaurant(menuitems, ordered_items):
     return set.intersection(*[set(list) for list in restaurant_list])
 
 
-def get_or_create_place(api_key, place):
+def get_or_create_place(api_key, place, places):
+    if not places.filter(address=place).exists():
+        lon, lat = fetch_coordinates(api_key, place.address)
+
     place_instance, created = Place.objects.get_or_create(
         address=place.address,
         defaults={
-            'lon': fetch_coordinates(api_key, place.address)[0],
-            'lat': fetch_coordinates(api_key, place.address)[1],
+            'lon': lon,
+            'lat': lat,
             'date': datetime.datetime.now()
         }
         )
@@ -156,6 +159,7 @@ def view_orders(request):
     orders_data = []
     menuitems = []
     restaurants = Restaurant.objects.all()
+    saved_places = Place.objects.all()
 
     apikey = env('API_KEY')
 
@@ -170,9 +174,9 @@ def view_orders(request):
         restaurant_distances = []
 
         for restaurant in order_restraurants:
-            restaurant = restaurants.get(name=restaurant) 
-            restaurant_place = get_or_create_place(apikey, restaurant)
-            order_place = get_or_create_place(apikey, order)
+            restaurant = restaurants.get(name=restaurant)
+            restaurant_place = get_or_create_place(apikey, restaurant, saved_places)
+            order_place = get_or_create_place(apikey, order, saved_places)
             distance_to_restaurant = distance.distance(
                 (restaurant_place.lat, restaurant_place.lon), 
                 (order_place.lat, order_place.lon)
