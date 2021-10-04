@@ -124,9 +124,12 @@ def get_suitable_restaurant(menuitems, ordered_items):
 
 
 def get_or_create_place(api_key, place, places):
-    if not places.filter(address=place).exists():
-        lon, lat = fetch_coordinates(api_key, place.address)
+    lon, lat = None, None
 
+    if place.address not in places:
+        lon, lat = fetch_coordinates(api_key, place.address)
+        places.append(place.address)
+    
     place_instance, created = Place.objects.get_or_create(
         address=place.address,
         defaults={
@@ -136,7 +139,6 @@ def get_or_create_place(api_key, place, places):
         }
         )
     return place_instance
-
 
 def fetch_coordinates(apikey, place):
     base_url = "https://geocode-maps.yandex.ru/1.x"
@@ -159,7 +161,7 @@ def view_orders(request):
     orders_data = []
     menuitems = []
     restaurants = Restaurant.objects.all()
-    saved_places = Place.objects.all()
+    saved_places = list(Place.objects.values_list('address', flat=True))
 
     apikey = env('API_KEY')
 
