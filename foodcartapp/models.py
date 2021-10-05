@@ -179,13 +179,11 @@ class Entry(models.Model):
     product = models.ForeignKey(
         Product,
         related_name='product_entries',
-        null=True,
         on_delete=models.CASCADE
         )
     order = models.ForeignKey(
         FoodCart,
         related_name='order_entries',
-        null=True,
         on_delete=models.CASCADE
         )
     quantity = models.PositiveIntegerField()
@@ -193,8 +191,6 @@ class Entry(models.Model):
         max_digits=8,
         decimal_places=2,
         validators=[MinValueValidator(0.0)],
-        null=True,
-        blank=True
         )
 
     def __str__(self):
