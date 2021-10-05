@@ -89,7 +89,7 @@ class FoodCart(models.Model):
     restaurant = models.ForeignKey(
         Restaurant,
         on_delete=models.CASCADE,
-        related_name='restaurant_order',
+        related_name='restaurant_orders',
         blank=True,
         null=True,
         verbose_name="ресторан")
