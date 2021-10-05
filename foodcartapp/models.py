@@ -114,12 +114,12 @@ class FoodCart(models.Model):
     called_at = models.DateTimeField(
         'Звонок совершен',
         blank=True,
-        default=timezone.now
+        null=True
         )
     delivered_at = models.DateTimeField(
         'Заказ доставлен',
         blank=True,
-        default=timezone.now
+        null=True
         )
     objects = FoodCartQuerySet.as_manager()
 
