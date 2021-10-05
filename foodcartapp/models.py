@@ -135,29 +135,34 @@ class FoodCart(models.Model):
         'Статус заказа',
         max_length=30,
         choices=choices,
-        blank=True
+        blank=True,
+        db_index=True
         )
     payment_method = models.CharField(
         'Способ оплаты',
         max_length=30,
         choices=payment_methods,
-        blank=True
+        blank=True,
+        db_index=True
         )
     comment = models.TextField('Комментарий', blank=True)
     registrated_at = models.DateTimeField(
         'Заказ зарегестрирован',
         blank=True,
-        default=timezone.now
+        default=timezone.now,
+        db_index=True
         )
     called_at = models.DateTimeField(
         'Звонок совершен',
         blank=True,
-        null=True
+        null=True,
+        db_index=True
         )
     delivered_at = models.DateTimeField(
         'Заказ доставлен',
         blank=True,
-        null=True
+        null=True,
+        db_index=True
         )
     
     objects = FoodCartQuerySet.as_manager()
