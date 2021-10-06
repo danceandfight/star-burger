@@ -169,7 +169,7 @@ def view_orders(request):
         menuitems = get_burger_availability()
 
     for order in FoodCart.objects.get_price():
-        products = order.order_entries.select_related('product')
+        products = order.entries.select_related('product')
         ordered_products_list = [product.product.name for product in products]
         order_restraurants = get_suitable_restaurant(menuitems, ordered_products_list)
 

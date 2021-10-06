@@ -106,7 +106,7 @@ class RestaurantMenuItem(models.Model):
 
 class FoodCartQuerySet(models.QuerySet):
     def get_price(self):
-        price = self.annotate(price=Sum(F('order_entries__product__price') * F('order_entries__quantity'), output_field=DecimalField()))
+        price = self.annotate(price=Sum(F('entries__product__price') * F('entries__quantity'), output_field=DecimalField()))
         return price
 
 
@@ -126,7 +126,7 @@ class FoodCart(models.Model):
     restaurant = models.ForeignKey(
         Restaurant,
         on_delete=models.CASCADE,
-        related_name='restaurant_orders',
+        related_name='orders',
         blank=True,
         null=True,
         verbose_name="ресторан"
@@ -178,12 +178,12 @@ class FoodCart(models.Model):
 class Entry(models.Model):
     product = models.ForeignKey(
         Product,
-        related_name='product_entries',
+        related_name='entries',
         on_delete=models.CASCADE
         )
     order = models.ForeignKey(
         FoodCart,
-        related_name='order_entries',
+        related_name='entries',
         on_delete=models.CASCADE
         )
     quantity = models.PositiveIntegerField()
