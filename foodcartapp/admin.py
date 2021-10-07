@@ -126,7 +126,7 @@ class FoodCartAdmin(admin.ModelAdmin):
 
     def response_change(self, request, obj):
 
-        res = super(FoodCartAdmin, self).response_change(request, obj)
+        res = super().response_change(request, obj)
         if "next" in request.GET:
             if url_has_allowed_host_and_scheme(request.GET['next'], None):
                 return redirect(request.GET['next'])
