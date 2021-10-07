@@ -69,7 +69,7 @@ class EntrySerializer(ModelSerializer):
 
 
 class FoodCartSerializer(ModelSerializer):
-    products = EntrySerializer(many=True, write_only=True)
+    products = EntrySerializer(many=True, write_only=True, allow_empty=False)
 
     class Meta:
         model = FoodCart
