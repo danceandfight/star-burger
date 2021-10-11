@@ -158,7 +158,7 @@ def fetch_coordinates(apikey, place):
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
 
-    orders_data = []
+    orders = []
     menuitems = []
     restaurants = Restaurant.objects.all()
     saved_places = list(Place.objects.values_list('address', flat=True))
@@ -186,7 +186,7 @@ def view_orders(request):
             restaurant_distances.append([restaurant.name, round(distance_to_restaurant, 1)])
         restaurant_distances = sorted(restaurant_distances, key=itemgetter(1))
 
-        order_data = {
+        order = {
             'id': order.id,
             'price': order.price,
             'firstname': order.firstname,
@@ -198,11 +198,11 @@ def view_orders(request):
             'payment_method': order.get_payment_method_display(),
             'restaurant': restaurant_distances
             }
-        orders_data.append(order_data)
+        orders.append(order)
 
     return render(
         request,
         template_name='order_items.html',
         context={
-            'order_items': orders_data}
+            'order_items': orders}
         )
