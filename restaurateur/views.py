@@ -13,11 +13,10 @@ from foodcartapp.models import Product, Restaurant, FoodCart, RestaurantMenuItem
 from places.models import Place
 
 from geopy import distance
-from environs import Env
+
 from operator import itemgetter
 
-env = Env()
-env.read_env()
+from star_burger.settings import apikey
 
 
 class Login(forms.Form):
@@ -140,6 +139,7 @@ def get_or_create_place(api_key, place, places):
         )
     return place_instance
 
+
 def fetch_coordinates(apikey, place):
     base_url = "https://geocode-maps.yandex.ru/1.x"
     params = {"geocode": place, "apikey": apikey, "format": "json"}
@@ -162,8 +162,6 @@ def view_orders(request):
     menuitems = []
     restaurants = Restaurant.objects.all()
     saved_places = list(Place.objects.values_list('address', flat=True))
-
-    apikey = env('API_KEY')
 
     if not menuitems:
         menuitems = get_burger_availability()
