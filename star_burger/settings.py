@@ -7,14 +7,14 @@ from environs import Env
 
 env = Env()
 env.read_env()
-apikey = env('API_KEY')
+YA_GEO_APIKEY = env('YA_GEO_APIKEY')
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
-SECRET_KEY = env('SECRET_KEY', 'etirgvonenrfnoerngorenogneongg334g')
-DEBUG = env.bool('DEBUG', True)
+SECRET_KEY = env('SECRET_KEY')
+DEBUG = env.bool('DEBUG', False)
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', ['127.0.0.1', 'localhost'])
 

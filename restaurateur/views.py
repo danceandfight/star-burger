@@ -16,7 +16,7 @@ from geopy import distance
 
 from operator import itemgetter
 
-from star_burger.settings import apikey
+from star_burger.settings import YA_GEO_APIKEY
 
 
 class Login(forms.Form):
@@ -175,8 +175,8 @@ def view_orders(request):
 
         for restaurant in order_restraurants:
             restaurant = restaurants.get(name=restaurant)
-            restaurant_place = get_or_create_place(apikey, restaurant, saved_places)
-            order_place = get_or_create_place(apikey, order, saved_places)
+            restaurant_place = get_or_create_place(YA_GEO_APIKEY, restaurant, saved_places)
+            order_place = get_or_create_place(YA_GEO_APIKEY, order, saved_places)
             distance_to_restaurant = distance.distance(
                 (restaurant_place.lat, restaurant_place.lon), 
                 (order_place.lat, order_place.lon)
