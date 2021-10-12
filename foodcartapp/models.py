@@ -105,8 +105,12 @@ class RestaurantMenuItem(models.Model):
 
 
 class FoodCartQuerySet(models.QuerySet):
-    def get_price(self):
+    def get_current_price(self):
         price = self.annotate(price=Sum(F('entries__product__price') * F('entries__quantity'), output_field=DecimalField()))
+        return price
+
+    def get_original_price(self):
+        price = self.annotate(price=Sum(F('entries__price') * F('entries__quantity'), output_field=DecimalField()))
         return price
 
 

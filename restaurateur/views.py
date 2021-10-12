@@ -165,7 +165,7 @@ def view_orders(request):
     if not menuitems:
         menuitems = []
 
-    for order in FoodCart.objects.get_price():
+    for order in FoodCart.objects.get_original_price():
         products = order.entries.select_related('product')
         ordered_products_list = [product.product.name for product in products]
         order_restraurants = get_suitable_restaurant(menuitems, ordered_products_list)
