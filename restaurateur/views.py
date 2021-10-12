@@ -159,12 +159,11 @@ def fetch_coordinates(apikey, place):
 def view_orders(request):
 
     orders = []
-    menuitems = []
     restaurants = Restaurant.objects.all()
     saved_places = list(Place.objects.values_list('address', flat=True))
-
+    menuitems = get_burger_availability()
     if not menuitems:
-        menuitems = get_burger_availability()
+        menuitems = []
 
     for order in FoodCart.objects.get_price():
         products = order.entries.select_related('product')
