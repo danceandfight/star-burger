@@ -5,6 +5,8 @@ from django.templatetags.static import static
 from django.utils.html import format_html
 from django.utils.http import url_has_allowed_host_and_scheme
 
+from restaurateur.views import view_orders
+
 from .models import Product
 from .models import ProductCategory
 from .models import Restaurant
@@ -130,5 +132,6 @@ class FoodCartAdmin(admin.ModelAdmin):
         if "next" in request.GET:
             if url_has_allowed_host_and_scheme(request.GET['next'], None):
                 return redirect(request.GET['next'])
+            return redirect(reverse('restaurateur:view_orders'))
         else:
             return res
