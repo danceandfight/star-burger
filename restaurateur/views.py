@@ -13,9 +13,7 @@ from foodcartapp.models import Product, Restaurant, FoodCart, RestaurantMenuItem
 from places.models import Place
 
 from geopy import distance
-
 from operator import itemgetter
-
 from star_burger.settings import YA_GEO_APIKEY
 
 
@@ -108,9 +106,9 @@ def get_burger_availability():
     burger_availability = {}
     for item in restaurantsmenuitems:
         if item.product.name not in burger_availability:
-            burger_availability[item.product.name] = []
+            burger_availability[item.product] = []
         if item.availability:
-            burger_availability[item.product.name].append(item.restaurant.name)
+            burger_availability[item.product].append(item.restaurant)
     return burger_availability
 
 
@@ -122,22 +120,24 @@ def get_suitable_restaurant(menuitems, ordered_items):
     return set.intersection(*[set(list) for list in restaurant_list])
 
 
-def get_or_create_place(api_key, place, places):
-    lon, lat = None, None
-
-    if place.address not in places:
-        lon, lat = fetch_coordinates(api_key, place.address)
-        places.append(place.address)
+def get_or_create_place(api_key, place, saved_places):
     
-    place_instance, created = Place.objects.get_or_create(
+    for saved_place in saved_places:
+        if saved_place['address'] == place.address:
+            lat = saved_place['lat']
+            lon = saved_place['lon']
+            return lat, lon
+        
+    lon, lat = fetch_coordinates(api_key, place.address)
+    Place.objects.create(
         address=place.address,
         defaults={
             'lon': lon,
             'lat': lat,
             'date': datetime.datetime.now()
-        }
+            }
         )
-    return place_instance
+    return lat, lon
 
 
 def fetch_coordinates(apikey, place):
@@ -159,26 +159,24 @@ def fetch_coordinates(apikey, place):
 def view_orders(request):
 
     orders = []
-    restaurants = Restaurant.objects.all()
-    saved_places = list(Place.objects.values_list('address', flat=True))
+    saved_places = list(Place.objects.values())
     menuitems = get_burger_availability()
+
     if not menuitems:
         menuitems = []
 
-    for order in FoodCart.objects.get_original_price():
-        products = order.entries.select_related('product')
-        ordered_products_list = [product.product.name for product in products]
+    for order in list(FoodCart.objects.get_original_price().prefetch_related('entries')):
+        products = order.entries.all().select_related('product')
+        ordered_products_list = [product.product for product in products]
         order_restraurants = get_suitable_restaurant(menuitems, ordered_products_list)
-
+        order_place_lat, order_place_lon = get_or_create_place(YA_GEO_APIKEY, order, saved_places)
         restaurant_distances = []
 
         for restaurant in order_restraurants:
-            restaurant = restaurants.get(name=restaurant)
-            restaurant_place = get_or_create_place(YA_GEO_APIKEY, restaurant, saved_places)
-            order_place = get_or_create_place(YA_GEO_APIKEY, order, saved_places)
+            restaurant_lat, restaurant_lon = get_or_create_place(YA_GEO_APIKEY, restaurant, saved_places)
             distance_to_restaurant = distance.distance(
-                (restaurant_place.lat, restaurant_place.lon), 
-                (order_place.lat, order_place.lon)
+                (restaurant_lat, restaurant_lon), 
+                (order_place_lat, order_place_lon)
                 ).km
             restaurant_distances.append([restaurant.name, round(distance_to_restaurant, 1)])
         restaurant_distances = sorted(restaurant_distances, key=itemgetter(1))
@@ -203,3 +201,5 @@ def view_orders(request):
         context={
             'order_items': orders}
         )
+
+
