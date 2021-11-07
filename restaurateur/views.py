@@ -102,7 +102,10 @@ def view_restaurants(request):
 
 
 def get_burger_availability():
-    restaurantsmenuitems = list(RestaurantMenuItem.objects.select_related('restaurant', 'product').all())
+    restaurantsmenuitems = list(RestaurantMenuItem.objects.select_related(
+        'restaurant',
+        'product'
+        ).all())
     burger_availability = {}
     for item in restaurantsmenuitems:
         if item.product not in burger_availability:
@@ -115,7 +118,7 @@ def get_burger_availability():
 def get_suitable_restaurant(menuitems, ordered_items):
     restaurant_list = []
     for item in ordered_items:
-        if item in menuitems.keys(): # Mistake somewhere here?
+        if item in menuitems.keys():
             restaurant_list.append(menuitems[item])
     return set.intersection(*[set(list) for list in restaurant_list])
 
@@ -166,12 +169,22 @@ def view_orders(request):
     for order in list(FoodCart.objects.get_original_price().prefetch_related('entries')):
         products = order.entries.all().select_related('product')
         ordered_products_list = [product.product for product in products]
-        order_restraurants = get_suitable_restaurant(menuitems, ordered_products_list)
-        order_place_lat, order_place_lon = get_or_create_place(YA_GEO_APIKEY, order, saved_places)
+        order_restraurants = get_suitable_restaurant(
+            menuitems,
+            ordered_products_list
+            )
+        order_place_lat, order_place_lon = get_or_create_place(
+            YA_GEO_APIKEY,
+            order, saved_places
+            )
         restaurant_distances = []
 
         for restaurant in order_restraurants:
-            restaurant_lat, restaurant_lon = get_or_create_place(YA_GEO_APIKEY, restaurant, saved_places)
+            restaurant_lat, restaurant_lon = get_or_create_place(
+                YA_GEO_APIKEY,
+                restaurant,
+                saved_places
+                )
             distance_to_restaurant = distance.distance(
                 (restaurant_lat, restaurant_lon), 
                 (order_place_lat, order_place_lon)
@@ -199,4 +212,3 @@ def view_orders(request):
         context={
             'order_items': orders}
         )
-
