@@ -105,7 +105,7 @@ def get_burger_availability():
     restaurantsmenuitems = list(RestaurantMenuItem.objects.select_related('restaurant', 'product').all())
     burger_availability = {}
     for item in restaurantsmenuitems:
-        if item.product.name not in burger_availability:
+        if item.product not in burger_availability:
             burger_availability[item.product] = []
         if item.availability:
             burger_availability[item.product].append(item.restaurant)
@@ -115,7 +115,7 @@ def get_burger_availability():
 def get_suitable_restaurant(menuitems, ordered_items):
     restaurant_list = []
     for item in ordered_items:
-        if item in menuitems.keys():
+        if item in menuitems.keys(): # Mistake somewhere here?
             restaurant_list.append(menuitems[item])
     return set.intersection(*[set(list) for list in restaurant_list])
 
@@ -131,11 +131,9 @@ def get_or_create_place(api_key, place, saved_places):
     lon, lat = fetch_coordinates(api_key, place.address)
     Place.objects.create(
         address=place.address,
-        defaults={
-            'lon': lon,
-            'lat': lat,
-            'date': datetime.datetime.now()
-            }
+        lon=lon,
+        lat=lat,
+        date=datetime.datetime.now()
         )
     return lat, lon
 
@@ -201,5 +199,4 @@ def view_orders(request):
         context={
             'order_items': orders}
         )
-
 
