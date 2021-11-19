@@ -105,7 +105,7 @@ def get_burger_availability():
     restaurantsmenuitems = list(RestaurantMenuItem.objects.select_related(
         'restaurant',
         'product'
-        ).all())
+        ))
     burger_availability = {}
     for item in restaurantsmenuitems:
         if item.product not in burger_availability:
@@ -167,7 +167,7 @@ def view_orders(request):
         menuitems = []
 
     for order in list(FoodCart.objects.get_original_price().prefetch_related('entries')):
-        products = order.entries.all().select_related('product')
+        products = order.entries.select_related('product')
         ordered_products_list = [product.product for product in products]
         order_restraurants = get_suitable_restaurant(
             menuitems,

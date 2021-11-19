@@ -4,7 +4,7 @@ from django.db import migrations
 
 def get_order_prices(apps, schema_editor):
     Entry = apps.get_model('foodcartapp', 'Entry')
-    for entry in Entry.objects.all().prefetch_related('product').iterator():
+    for entry in Entry.objects.prefetch_related('product').iterator():
         if entry.price is None:
             entry.price = entry.product.price
             entry.save(update_fields=['price'])
