@@ -8,13 +8,13 @@ from django.urls import reverse_lazy
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
+from django.conf import settings
 
 from foodcartapp.models import Product, Restaurant, FoodCart, RestaurantMenuItem
 from places.models import Place
 
 from geopy import distance
 from operator import itemgetter
-from star_burger.settings import YA_GEO_APIKEY
 
 
 class Login(forms.Form):
@@ -174,14 +174,14 @@ def view_orders(request):
             ordered_products_list
             )
         order_place_lat, order_place_lon = get_or_create_place(
-            YA_GEO_APIKEY,
+            settings.YA_GEO_APIKEY,
             order, saved_places
             )
         restaurant_distances = []
 
         for restaurant in order_restraurants:
             restaurant_lat, restaurant_lon = get_or_create_place(
-                YA_GEO_APIKEY,
+                settings.YA_GEO_APIKEY,
                 restaurant,
                 saved_places
                 )
