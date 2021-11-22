@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 from django.conf import settings
+from django.db.models import Q
 
 from foodcartapp.models import Product, Restaurant, FoodCart, RestaurantMenuItem
 from places.models import Place
@@ -160,7 +161,11 @@ def fetch_coordinates(apikey, place):
 def view_orders(request):
 
     orders = []
-    saved_places = list(Place.objects.values())
+    orders_addresses = FoodCart.objects.values_list('address')
+    restaurant_adresses = Restaurant.objects.values_list('address')
+    saved_places = list(Place.objects.filter(
+        Q(address__in=orders_addresses) | 
+        Q(address__in=restaurant_adresses)).values())
     menuitems = get_burger_availability()
 
     if not menuitems:
