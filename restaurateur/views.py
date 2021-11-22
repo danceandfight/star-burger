@@ -111,8 +111,7 @@ def get_burger_availability():
     for item in restaurantsmenuitems:
         if item.product not in burger_availability:
             burger_availability[item.product] = []
-        if item.availability:
-            burger_availability[item.product].append(item.restaurant)
+        burger_availability[item.product].append(item.restaurant)
     return burger_availability
 
 
