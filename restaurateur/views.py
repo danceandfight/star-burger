@@ -1,6 +1,8 @@
 import requests
 import datetime
 
+from collections import defaultdict
+
 from django import forms
 from django.shortcuts import redirect, render
 from django.views import View
@@ -107,10 +109,8 @@ def get_menuitem_availability():
         'restaurant',
         'product'
         ))
-    menuitems_availability = {}
+    menuitems_availability = defaultdict(list)
     for item in restaurantsmenuitems:
-        if item.product not in menuitems_availability:
-            menuitems_availability[item.product] = []
         menuitems_availability[item.product].append(item.restaurant)
     return menuitems_availability
 
