@@ -116,11 +116,11 @@ def get_menuitem_availability():
 
 
 def get_suitable_restaurant(menuitems, ordered_items):
-    restaurant_list = []
+    restaurants = []
     for item in ordered_items:
         if item in menuitems.keys():
-            restaurant_list.append(menuitems[item])
-    return set.intersection(*[set(list) for list in restaurant_list])
+            restaurants.append(menuitems[item])
+    return set.intersection(*[set(list) for list in restaurants])
 
 
 def get_or_create_place(api_key, place, saved_places):
