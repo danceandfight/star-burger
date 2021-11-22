@@ -102,17 +102,17 @@ def view_restaurants(request):
     })
 
 
-def get_burger_availability():
+def get_menuitem_availability():
     restaurantsmenuitems = list(RestaurantMenuItem.objects.select_related(
         'restaurant',
         'product'
         ))
-    burger_availability = {}
+    menuitems_availability = {}
     for item in restaurantsmenuitems:
-        if item.product not in burger_availability:
-            burger_availability[item.product] = []
-        burger_availability[item.product].append(item.restaurant)
-    return burger_availability
+        if item.product not in menuitems_availability:
+            menuitems_availability[item.product] = []
+        menuitems_availability[item.product].append(item.restaurant)
+    return menuitems_availability
 
 
 def get_suitable_restaurant(menuitems, ordered_items):
@@ -165,7 +165,7 @@ def view_orders(request):
     saved_places = list(Place.objects.filter(
         Q(address__in=orders_addresses) | 
         Q(address__in=restaurant_adresses)).values())
-    menuitems = get_burger_availability()
+    menuitems = get_menuitem_availability()
 
     if not menuitems:
         menuitems = []
