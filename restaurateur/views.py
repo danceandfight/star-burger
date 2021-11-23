@@ -120,7 +120,7 @@ def get_suitable_restaurant(menuitems, ordered_items):
     for item in ordered_items:
         if item in menuitems.keys():
             restaurants.append(menuitems[item])
-    return set.intersection(*[set(list) for list in restaurants])
+    return set.intersection(*[set(restaurant) for restaurant in restaurants])
 
 
 def get_or_create_place(api_key, place, saved_places):
@@ -172,10 +172,10 @@ def view_orders(request):
 
     for order in list(FoodCart.objects.get_original_price().prefetch_related('entries')):
         products = order.entries.select_related('product')
-        ordered_products_list = [product.product for product in products]
+        ordered_products = [product.product for product in products]
         order_restraurants = get_suitable_restaurant(
             menuitems,
-            ordered_products_list
+            ordered_products
             )
         order_place_lat, order_place_lon = get_or_create_place(
             settings.YA_GEO_APIKEY,
