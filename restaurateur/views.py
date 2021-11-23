@@ -116,10 +116,7 @@ def get_menuitem_availability():
 
 
 def get_suitable_restaurant(menuitems, ordered_items):
-    restaurants = []
-    for item in ordered_items:
-        if item in menuitems.keys():
-            restaurants.append(menuitems[item])
+    restaurants = [menuitems[item] for item in ordered_items]
     return set.intersection(*[set(restaurant) for restaurant in restaurants])
 
 
