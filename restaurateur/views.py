@@ -164,9 +164,6 @@ def view_orders(request):
         Q(address__in=restaurant_adresses)).values())
     menuitems = get_menuitem_availability()
 
-    if not menuitems:
-        menuitems = []
-
     for order in list(FoodCart.objects.get_original_price().prefetch_related('entries')):
         products = order.entries.select_related('product')
         ordered_products = [product.product for product in products]
