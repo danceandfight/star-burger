@@ -116,7 +116,7 @@ class FoodCartQuerySet(models.QuerySet):
 
 class FoodCart(models.Model):
 
-    choices = (('Recieved', 'Доставлен'), ('In progress', 'В обработке'))
+    choices = (('Unprocessed', 'Не обработан'), ('Recieved', 'Доставлен'), ('In progress', 'В обработке'))
     payment_methods = (('Cash', 'Наличными'), ('By card', 'Картой'))
 
     firstname = models.CharField('Имя', max_length=20)
@@ -139,6 +139,7 @@ class FoodCart(models.Model):
         'Статус заказа',
         max_length=30,
         choices=choices,
+        default=choices[0][0],
         blank=True,
         db_index=True
         )
