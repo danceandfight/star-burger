@@ -164,7 +164,7 @@ def view_orders(request):
         Q(address__in=restaurant_adresses)).values())
     menuitems = get_menuitem_availability()
 
-    for order in FoodCart.objects.get_original_price().prefetch_related('entries'):
+    for order in FoodCart.objects.filter(status='Unprocessed').get_original_price().prefetch_related('entries'):
         products = order.entries.select_related('product')
         ordered_products = [product.product for product in products]
         order_restraurants = get_suitable_restaurant(
