@@ -12,8 +12,9 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.db.models import Q
+from django.db.models import Prefetch
 
-from foodcartapp.models import Product, Restaurant, FoodCart, RestaurantMenuItem
+from foodcartapp.models import Product, Restaurant, FoodCart, RestaurantMenuItem, Entry
 from places.models import Place
 
 from geopy import distance
@@ -163,9 +164,12 @@ def view_orders(request):
         Q(address__in=orders_addresses) | 
         Q(address__in=restaurant_adresses)).values())
     menuitems = get_menuitem_availability()
-
-    for order in FoodCart.objects.filter(status='Unprocessed').get_original_price().prefetch_related('entries'):
-        products = order.entries.select_related('product')
+    unprocessed_orders = FoodCart.objects.filter(status='Unprocessed').get_original_price().prefetch_related(
+        Prefetch('entries', 
+        queryset=Entry.objects.select_related('product'))
+        )
+    for order in unprocessed_orders:
+        products = order.entries.all()
         ordered_products = [product.product for product in products]
         order_restraurants = get_suitable_restaurant(
             menuitems,
