@@ -175,21 +175,21 @@ def view_orders(request):
             menuitems,
             ordered_products
             )
-        order_place_lat, order_place_lon = get_or_create_place(
+        place_coordinates = get_or_create_place(
             settings.YA_GEO_APIKEY,
             order, saved_places
             )
         restaurant_distances = []
 
         for restaurant in order_restraurants:
-            restaurant_lat, restaurant_lon = get_or_create_place(
+            restaurant_coordinates = get_or_create_place(
                 settings.YA_GEO_APIKEY,
                 restaurant,
                 saved_places
                 )
             distance_to_restaurant = distance.distance(
-                (restaurant_lat, restaurant_lon), 
-                (order_place_lat, order_place_lon)
+                (restaurant_coordinates), 
+                (place_coordinates)
                 ).km
             restaurant_distances.append([restaurant.name, round(distance_to_restaurant, 1)])
         restaurant_distances = sorted(restaurant_distances, key=itemgetter(1))
