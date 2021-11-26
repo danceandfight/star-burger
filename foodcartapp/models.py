@@ -140,7 +140,6 @@ class FoodCart(models.Model):
         max_length=30,
         choices=choices,
         default=choices[0][0],
-        blank=True,
         db_index=True
         )
     payment_method = models.CharField(
