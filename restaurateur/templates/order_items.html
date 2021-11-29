@@ -37,9 +37,13 @@
         <td>
           <details>
             <summary>Развернуть</summary>
-              {% for restaurant, distance in item.restaurant %}
-                {{ restaurant }} - {{ distance }} км<br>
-              {% endfor %}
+              {% if not item.restaurant %}
+                 <p>Не удалось определить ресторан</p><br>
+              {% else %}
+                {% for restaurant, distance in item.restaurant %}
+                  {{ restaurant }} - {{ distance }} км<br>
+                {% endfor %}
+              {% endif %}
             
           </details>
         </td>

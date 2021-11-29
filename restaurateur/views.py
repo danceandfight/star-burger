@@ -123,21 +123,27 @@ def get_suitable_restaurant(menuitems, ordered_items):
 
 def get_or_create_place(api_key, place, saved_places):
     
-    for saved_place in saved_places:
-        if saved_place['address'] == place.address:
-            lat = saved_place['lat']
-            lon = saved_place['lon']
-            return lat, lon
-        
-    lon, lat = fetch_coordinates(api_key, place.address)
-    Place.objects.create(
-        address=place.address,
-        lon=lon,
-        lat=lat,
-        date=datetime.datetime.now()
+    if place.address not in saved_places.keys():
+        coordinates = fetch_coordinates(api_key, place.address)
+        if not coordinates:
+            lon = lat = None
+        else:
+            lon, lat = coordinates
+        Place.objects.create(
+            address=place.address,
+            lon=lon,
+            lat=lat,
+            date=datetime.datetime.now()
         )
-    return lat, lon
+        return coordinates
 
+    lon = saved_places[place.address]['lon']
+    lat = saved_places[place.address]['lat']
+
+    if not (lat or lon):
+        return None
+    return lon, lat
+    
 
 def fetch_coordinates(apikey, place):
     base_url = "https://geocode-maps.yandex.ru/1.x"
@@ -163,36 +169,42 @@ def view_orders(request):
     saved_places = list(Place.objects.filter(
         Q(address__in=orders_addresses) | 
         Q(address__in=restaurant_adresses)).values())
+    saved_places = {place['address']:place for place in saved_places}
     menuitems = get_menuitem_availability()
     unprocessed_orders = FoodCart.objects.filter(status='Unprocessed').get_original_price().prefetch_related(
         Prefetch('entries', 
         queryset=Entry.objects.select_related('product'))
         )
     for order in unprocessed_orders:
-        products = order.entries.all()
-        ordered_products = [product.product for product in products]
-        order_restraurants = get_suitable_restaurant(
-            menuitems,
-            ordered_products
-            )
         place_coordinates = get_or_create_place(
             settings.YA_GEO_APIKEY,
-            order, saved_places
+            order, 
+            saved_places
             )
-        restaurant_distances = []
-
-        for restaurant in order_restraurants:
-            restaurant_coordinates = get_or_create_place(
-                settings.YA_GEO_APIKEY,
-                restaurant,
-                saved_places
+        if place_coordinates:
+            products = order.entries.all()
+            ordered_products = [product.product for product in products]
+            order_restraurants = get_suitable_restaurant(
+                menuitems,
+                ordered_products
                 )
-            distance_to_restaurant = distance.distance(
-                (restaurant_coordinates), 
-                (place_coordinates)
-                ).km
-            restaurant_distances.append([restaurant.name, round(distance_to_restaurant, 1)])
-        restaurant_distances = sorted(restaurant_distances, key=itemgetter(1))
+            
+            restaurant_distances = []
+
+            for restaurant in order_restraurants:
+                restaurant_coordinates = get_or_create_place(
+                    settings.YA_GEO_APIKEY,
+                    restaurant,
+                    saved_places
+                    )
+                distance_to_restaurant = distance.distance(
+                    (restaurant_coordinates), 
+                    (place_coordinates)
+                    ).km
+                restaurant_distances.append([restaurant.name, round(distance_to_restaurant, 1)])
+            restaurant_distances = sorted(restaurant_distances, key=itemgetter(1))
+        else:
+            restaurant_distances = None
 
         order = {
             'id': order.id,
