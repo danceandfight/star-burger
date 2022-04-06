@@ -1,8 +1,9 @@
 import os
-
+import rollbar
 import dj_database_url
 
 from environs import Env
+from git import Repo
 
 
 env = Env()
@@ -15,8 +16,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env.bool('DEBUG', False)
+ROLLBAR_TOKEN = env('ROLLBAR_TOKEN')
+ENVIRONMENT = env('ENVIRONMENT')
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', ['127.0.0.1', 'localhost'])
+
 
 INSTALLED_APPS = [
     'foodcartapp.apps.FoodcartappConfig',
@@ -42,7 +46,18 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'rollbar.contrib.django.middleware.RollbarNotifierMiddlewareExcluding404',
 ]
+
+ROLLBAR = {
+    'access_token': ROLLBAR_TOKEN,
+    'environment': ENVIRONMENT, #switch to 'production', 'stage' or any other 
+                                #when needed in .env
+    'branch': Repo(path=BASE_DIR).active_branch.name,
+    'root': BASE_DIR,
+}
+
+rollbar.init(**ROLLBAR)
 
 ROOT_URLCONF = 'star_burger.urls'
 
@@ -127,3 +142,6 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "assets"),
     os.path.join(BASE_DIR, "bundles"),
 ]
+
+
+
