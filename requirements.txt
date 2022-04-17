@@ -7,5 +7,5 @@ requests==2.22.0
 geopy==2.1.0
 django-phonenumber-field==5.2.0
 djangorestframework==3.12.2
-GitPython
-rollbar
+GitPython==3.1.20
+rollbar==0.16.2
