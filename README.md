@@ -132,6 +132,52 @@ Parcel будет следить за файлами в каталоге `bundle
 
 Создайте аккаунт в [Rollbar](https://rollbar.com) и создайте новый проект. Выбирайте Django как свою SDK и в результате вы получите строки кода, которые нужно вставить в settings.py своего проекта для интеграции Rollbar. У нас он уже установлен и настроен, вам осталось только скопировать 'access token' в файл .env в переменную ROLLBAR (см. далее).
 
+## Настройка PostreSQL
+
+Установите psycopg2, для того что бы можно было пользоваться базой данной PostreSQL:
+```sh
+pip install django psycopg2
+````
+Установите [PostgreSQL](https://www.postgresql.org/download/). На сервере для установки используйте команду:
+```sh
+sudo apt-get install python-pip python-dev libpq-dev postgresql postgresql-contrib
+```
+Смените пользователя и запустите shell сессию:
+```sh
+sudo su - postgres
+psql
+```
+Создайте новую базу данных и пользователя с паролем:
+```sql
+CREATE DATABASE myproject;
+CREATE USER myprojectuser WITH PASSWORD 'password';
+```
+Установите несколько полезных настроек (кодировка, чтение, временная зона):
+```sql
+ALTER ROLE myprojectuser SET client_encoding TO 'utf8';
+ALTER ROLE myprojectuser SET default_transaction_isolation TO 'read committed';
+ALTER ROLE myprojectuser SET timezone TO 'UTC';
+```
+Выдайте юзеру права и завершите работу shell сессии:
+```sql
+GRANT ALL PRIVILEGES ON DATABASE myproject TO myprojectuser;
+\q
+exit
+```
+
+Если хотите перенести существующую базу данных sqlite3 в PostrgeSQL используйте команды:
+```sh
+python3 manage.py dump > file.json
+python3 manage.py load file.json
+```
+Если возникнет `Unicode Error` при использовании `load`, смените кодировку `file.json` любым способом на `utf-8`, например выполнив в shell команды:
+```sh
+with open('file.json') as f:
+    data = f.read()
+with open('file.json','w',encoding='utf8') as f:
+    f.write(data)
+```
+
 ## Как запустить prod-версию сайта
 
 Собрать фронтенд:
@@ -148,6 +194,8 @@ Parcel будет следить за файлами в каталоге `bundle
 - `ALLOWED_HOSTS` — [см. документацию Django](https://docs.djangoproject.com/en/3.1/ref/settings/#allowed-hosts)
 - `ROLLBAR` - токен роллбара. Получите его при создании проекта [Rollbar](https://rollbar.com).
 - `ENVIRONMENT` - название окружения, которое будет фиксировать ROLLBAR для проекта. Предполагает разные варианты, например: development, production, stage и тп. Используйте вместо создания разных профилей.
+- `DB_URL` - упакованные с помощью утилиты dj-database-url настройки доступа к базе данных. Должны выглядеть как URL вида:
+postgres://myprojectuser:password@host:port/project
 
 
 ## Цели проекта

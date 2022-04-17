@@ -13,7 +13,6 @@ YA_GEO_APIKEY = env('YA_GEO_APIKEY')
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env.bool('DEBUG', False)
 ROLLBAR_TOKEN = env('ROLLBAR_TOKEN')
@@ -99,10 +98,10 @@ WSGI_APPLICATION = 'star_burger.wsgi.application'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
+
+DB_URL = os.getenv('DB_URL')
 DATABASES = {
-    'default': dj_database_url.config(
-        default='sqlite:////{0}'.format(os.path.join(BASE_DIR, 'db.sqlite3'))
-    )
+    'default': dj_database_url.config(default=DB_URL)    
 }
 
 
