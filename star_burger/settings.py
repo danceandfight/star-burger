@@ -18,7 +18,7 @@ DEBUG = env.bool('DEBUG', False)
 ROLLBAR_TOKEN = env('ROLLBAR_TOKEN')
 ENVIRONMENT = env('ENVIRONMENT')
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', ['127.0.0.1', 'localhost'])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
 
 INSTALLED_APPS = [
