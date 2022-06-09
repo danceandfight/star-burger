@@ -197,6 +197,36 @@ with open('file.json','w',encoding='utf8') as f:
 - `DB_URL` - упакованные с помощью утилиты dj-database-url настройки доступа к базе данных. Должны выглядеть как URL вида:
 postgres://myprojectuser:password@host:port/project
 
+## Как быстро обновить prod-версию сайта после внесения изменений в репозитории
+
+На сервере, положите код проекта в папку `/opt`. В папке "Home/<ваш-пользователь>" создайте файл с расширением .sh - например, deploy_star_burger.sh
+
+В него поместите следующий код:
+```sh
+#!/bin/bash
+set -e
+git -C /opt/star-burger/ stash
+git -C /opt/star-burger/ pull
+cd /opt/star-burger
+pip install -r requirements.txt
+echo Python requirements updated
+npm install --dev
+echo Node requirements updated
+python3 manage.py collectstatic --noinput
+echo Static files collected
+python3 manage.py migrate
+echo Migrations applied
+sudo systemctl daemon-reload
+echo Reload systemd files
+sudo systemctl restart star-burger.service
+echo Django service restarted
+sudo systemctl reload nginx.service
+echo Nginx reloaded
+echo $(git status)
+```
+
+Файл запускается командой: `source deploy_star_burger.sh`.
+
 
 ## Цели проекта
 
