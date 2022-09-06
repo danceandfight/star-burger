@@ -233,6 +233,9 @@ echo $(git status)
 Файл запускается командой: `source deploy_star_burger.sh`.
 
 
+Ссылка на сайт: https://www.bxxw.tk/
+
+
 ## Цели проекта
 
 Код написан в учебных целях — это урок в курсе по Python и веб-разработке на сайте [Devman](https://dvmn.org). За основу был взят код проекта [FoodCart](https://github.com/Saibharath79/FoodCart).
