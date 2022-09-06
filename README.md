@@ -199,15 +199,20 @@ postgres://myprojectuser:password@host:port/project
 
 ## Как быстро обновить prod-версию сайта после внесения изменений в репозитории
 
-На сервере, положите код проекта в папку `/opt`. В папке "Home/<ваш-пользователь>" создайте файл с расширением .sh - например, deploy_star_burger.sh
+На сервере, положите код проекта в папку `/opt`. В папке "Home/<ваш-пользователь>" создайте файл с расширением .sh - например, deploy_star_burger.sh. У пользователя должны быть права sudo.
 
 В него поместите следующий код:
 ```sh
 #!/bin/bash
 set -e
-git -C /opt/star-burger/ stash
-git -C /opt/star-burger/ pull
 cd /opt/star-burger
+git stash
+git pull
+commithash=$(git rev-parse --verify HEAD)
+source .env
+curl -H "X-Rollbar-Access-Token: $ROLLBAR_TOKEN" \
+-H "Content-Type: application/json" -X POST 'https://api.rollbar.com/api/1/deploy' \
+-d '{"environment": "production", "revision": "$commithash", "rollbar_name": "pavel", "local_username": "pavel-ci", "comment": "", "status": "succeeded"}'
 pip install -r requirements.txt
 echo Python requirements updated
 npm install --dev
