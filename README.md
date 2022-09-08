@@ -199,36 +199,7 @@ postgres://myprojectuser:password@host:port/project
 
 ## Как быстро обновить prod-версию сайта после внесения изменений в репозитории
 
-На сервере, положите код проекта в папку `/opt`. В папке "Home/<ваш-пользователь>" создайте файл с расширением .sh - например, deploy_star_burger.sh. У пользователя должны быть права sudo.
-
-В него поместите следующий код:
-```sh
-#!/bin/bash
-set -e
-cd /opt/star-burger
-git stash
-git pull
-commithash=$(git rev-parse --verify HEAD)
-source .env
-curl -H "X-Rollbar-Access-Token: $ROLLBAR_TOKEN" \
--H "Content-Type: application/json" -X POST 'https://api.rollbar.com/api/1/deploy' \
--d '{"environment": "production", "revision": "$commithash", "rollbar_name": "pavel", "local_username": "pavel-ci", "comment": "", "status": "succeeded"}'
-pip install -r requirements.txt
-echo Python requirements updated
-npm install --dev
-echo Node requirements updated
-python3 manage.py collectstatic --noinput
-echo Static files collected
-python3 manage.py migrate
-echo Migrations applied
-sudo systemctl daemon-reload
-echo Reload systemd files
-sudo systemctl restart star-burger.service
-echo Django service restarted
-sudo systemctl reload nginx.service
-echo Nginx reloaded
-echo $(git status)
-```
+На сервере, положите код проекта в папку `/opt`. В корне проекта вы найдете файл `deploy_star_burger.sh`, который при запуске обновляет сайт. Его удобно хранить либо здесь, либо в папке "Home/<ваш-пользователь>" для быстрого запуска сразу после входа на сервер. У пользователя должны быть права sudo.
 
 Файл запускается командой: `source deploy_star_burger.sh`.
 
