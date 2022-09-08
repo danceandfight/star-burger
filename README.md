@@ -199,34 +199,9 @@ postgres://myprojectuser:password@host:port/project
 
 ## Как быстро обновить prod-версию сайта после внесения изменений в репозитории
 
-На сервере, положите код проекта в папку `/opt`. В папке "Home/<ваш-пользователь>" создайте файл с расширением .sh - например, deploy_star_burger.sh
+На сервере, положите код проекта в папку `/opt`. В папке проекта вы найдете создайте файл `deploy_star_burger.sh`. Запустите его командой: `source deploy_star_burger.sh`.
 
-В него поместите следующий код:
-```sh
-#!/bin/bash
-set -e
-git -C /opt/star-burger/ stash
-git -C /opt/star-burger/ pull
-cd /opt/star-burger
-pip install -r requirements.txt
-echo Python requirements updated
-npm install --dev
-echo Node requirements updated
-python3 manage.py collectstatic --noinput
-echo Static files collected
-python3 manage.py migrate
-echo Migrations applied
-sudo systemctl daemon-reload
-echo Reload systemd files
-sudo systemctl restart star-burger.service
-echo Django service restarted
-sudo systemctl reload nginx.service
-echo Nginx reloaded
-echo $(git status)
-```
-
-Файл запускается командой: `source deploy_star_burger.sh`.
-
+Работа скрипта не зависит от местоположения файла - можете перенести его в любое удобное место, например, в /home/<вашюзернейм>.
 
 ## Цели проекта
 
