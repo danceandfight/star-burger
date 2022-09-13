@@ -1,6 +1,8 @@
 bundles/**
 node_modules/
 media/
+package-lock.json
+package.json
 
 
 # Byte-compiled / optimized / DLL files
